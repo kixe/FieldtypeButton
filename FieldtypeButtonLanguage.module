@@ -1,0 +1,121 @@
+<?php
+
+/**
+ * ProcessWire Multi-language extension for FieldtypeButton
+ *
+ * Field that stores 3 values for label, target and class.
+ * Define html output in field settings.
+ * @author kixe (Christoph Thelen) 13.06.16
+ * @license Licensed under GNU/GPL v3
+ * @link http://processwire.com/talk
+ * 
+ * ProcessWire 2.x, 3.x 
+ * Copyright (C) 2016 by Ryan Cramer 
+ * Licensed under GNU/GPL v2, see LICENSE.TXT
+ * 
+ * http://processwire.com
+ *
+ *
+ *
+ */
+
+class FieldtypeButtonLanguage extends FieldtypeButton {
+
+	public static function getModuleInfo() {
+		return array(
+			'title' => 'Button Fieldtype (Multi-language)',
+			'version' => 100,
+			'summary' => 'Multilanguage Extension for FieldtypeButton.',
+			'author' => 'kixe',
+            'installs' => 'FieldtypeButton',
+			);
+	}
+
+    public $languageSupport;
+
+    public function init() {
+    	parent::init();
+    	$this->languageSupport = $this->modules->get('LanguageSupport');
+    }
+
+    /**
+     * @return Inputfield for this fieldtype
+     *
+     */
+    public function getInputfield(Page $page, Field $field) {
+        $inputfield =  $this->modules->get('InputfieldCTAButton');
+        $inputfield->languageSupport = $this->languageSupport;
+        return $inputfield;
+    }
+
+    /**
+     * Given a raw value (value as stored in DB), return the value as it would appear in a Page object
+     *
+     * @param Page $page
+     * @param Field $field
+     * @param string|int|array $value
+     * @return string|int|array|object $value
+     *
+     */
+    public function ___wakeupValue(Page $page, Field $field, $value) {
+    	if($value instanceof Button) return $value;
+		$button = parent::___wakeupValue($page, $field, $value);
+		if (is_array($value)) {
+			foreach($this->languageSupport->otherLanguagePageIDs as $languageID) {
+			$button->{"label$languageID"} = $value["data$languageID"];
+			}
+		}
+        return $button;  
+    }
+
+    /**
+     * Given an 'awake' value, as set by wakeupValue, convert the value back to a basic type for storage in DB. 
+     *              
+     * @param Page $page
+     * @param Field $field
+     * @param Button object $value
+     * @return array
+     *
+     */
+    public function ___sleepValue(Page $page, Field $field, $value) {
+
+        $sleepValue = parent::___sleepValue($page, $field, $value);
+        if (empty($sleepValue)) return $sleepValue;
+		foreach($this->languageSupport->otherLanguagePageIDs as $languageID) {
+			$sleepValue["data$languageID"] = $value->{"label$languageID"};
+		}	
+        return $sleepValue;
+    }
+
+    /**
+     * Method called when the field is database-queried from a selector
+     * @todo searching for 'label' should include labels of any language
+     *
+     */
+    public function getMatchQuery($query, $table, $subfield, $operator, $value) {
+        // If searching 'label' then assume our default (data) field
+        if ($subfield == "label{$this->languageSupport->defaultLanguagePageID}") $subfield = 'data';
+        else if (strpos($subfield,'label') === 0) $subfield = str_replace('label', 'data', $subfield);
+        return parent::getMatchQuery($query, $table, $subfield, $operator, $value); 
+    }
+
+	/**
+	 * Return the database schema in specified format
+	 *
+	 */
+	public function getDatabaseSchema(Field $field) {
+	
+		$schema = parent::getDatabaseSchema($field);
+	
+		// note that we use otherLanguagePageIDs rather than wire('languages') because
+		// it's possible that this method may be called before the languages are known 
+		foreach($this->languageSupport->otherLanguagePageIDs as $languageID) {
+			$schema["data$languageID"] = 'tinytext';
+			$schema['keys']["data$languageID"] = "KEY `data$languageID` (`data$languageID`(255))";
+		}	
+		return $schema;
+	}
+
+}
+
+

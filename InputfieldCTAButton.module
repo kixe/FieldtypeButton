@@ -1,0 +1,207 @@
+<?php
+
+/**
+ * ProcessWire Button Inputfield
+ * expected by FieldtypeButton
+ *
+ * @author kixe (Christoph Thelen) 13.06.16
+ * @license Licensed under GNU/GPL v3
+ * @link http://processwire.com/talk
+ * 
+ * ProcessWire 2.x, 3.x 
+ * Copyright (C) 2016 by Ryan Cramer 
+ * Licensed under GNU/GPL v2, see LICENSE.TXT
+ * 
+ * http://processwire.com
+ *
+ *
+ */
+
+class InputfieldCTAButton extends Inputfield {
+
+    public static function getModuleInfo() {
+        return array(
+            'title' => __('Inputfield Button', __FILE__),
+            'summary' => __('Create and Edit a CTA button.', __FILE__),
+            'version' => 100,
+            'author' => 'kixe',
+            'requires' => array("FieldtypeButton")
+        );
+    }
+
+    public $languageSupport;
+
+    /**
+     * Construct the Inputfield, setting defaults for all properties
+     *
+     */
+    public function __construct() {
+        $this->languageSupport = false;     
+        parent::__construct();
+    }
+
+    /**
+     * Per the Module interface, init() is called when the system is ready for API usage
+     *
+     */
+    public function init() {
+        return parent::init();
+    }
+
+    /**
+     * Return the completed output of this Inputfield, ready for insertion in an XHTML form
+     *
+     * @return string
+     *
+     */
+    public function ___render() {
+
+        $name = $this->attr('name');
+        $field = wire('fields')->get("name=$name");
+        $fieldSettingsPath = wire('config')->urls->admin."setup/field/edit?id=$field->id#fieldtypeConfig";
+ 
+        if ($this->attr('value')) $value = $this->attr('value');
+        else {
+            $value = array('label' => '','target' => '','class' => '');
+            if ($this->languageSupport) {
+                foreach($this->languageSupport->otherLanguagePageIDs as $languageID) $value["label$languageID"] = '';
+            }
+        }
+
+        $inputfields = new InputfieldFieldset();
+
+        if ($field->provide_api) {
+            $table = $this->modules->get("MarkupAdminDataTable");
+            $table->setEncodeEntities(false);
+            $header1 = _('Variable');
+            $header2 = _('Value');
+            $header3 = _('Description');
+            $table->headerRow(array($header1, $header2, $header3));
+
+            $this->modules->get('JqueryUI')->use('modal');
+
+            $content = array(
+                "\$page->$name" => _('Returns the Button object.'),
+                "echo \$page->$name" => _("Returns the complete markup string with populated string tags in current user language. Short version for")." <em style='color:rgb(59, 161, 234)'>\$page->{$name}->render()</em>.",
+                "\$page->{$name}->label" => _('Returns the button label in the default language.'),            
+                "\$page->{$name}->target" => _('Returns user language specific page url if target is detected as internal page. Otherwise any string (http://example.org) Default: empty string.'),
+                "\$page->{$name}->targetPage" => _('Returns a Page object if target is detected as internal page. Default: NULL'),
+                "\$page->{$name}->class" => _('Returns the button CSS class. Default: empty string.'),
+                "\$page->{$name}->html" => _("Returns the markup string, as set in")." <a href='$fieldSettingsPath'>Field Settings</a>. ".
+                _("Placeholders (item properties) surrounded with curled brackets. If 'targetPage' is defined use dot syntax to get any field value or property of the target.")
+                );
+
+            if ($this->languageSupport) {
+                foreach($this->languageSupport->otherLanguagePageIDs as $languageID) {
+                    $lang = $this->languages->get("id=$languageID");
+                    $content["\$page->{$name}->label$languageID"] = _("Returns language specific ($lang->name) button label.");
+                }
+            }
+
+            foreach ($content as $col1 => $col3) {
+                $split = explode('>',$col1);
+                $property = array_pop($split);
+                if ($property == 'targetPage') {
+                    $str = $value->$property? "Page object (id={$value->$property})":'NULL';
+                    $str = "<em class='description'>$str</em>";
+                }
+                else if ($property==$name) {
+                    if (strpos($col1,'echo')===0) $str = htmlentities($value->render());
+                    else $str = "<em class='description'>Button object</em>";
+                }
+                else $str = htmlentities($value->$property);
+                $col1 = "<em style='color:rgb(59, 161, 234)'>$col1</em>";
+                $col2 = $str;
+                $table->row(array($col1, $col2, $col3));
+            }
+
+            $f = $this->modules->get("InputfieldMarkup");
+            $f->value = $table->render();
+            $f->label = _("API");
+            $f->collapsed = Inputfield::collapsedYes;
+            $inputfields->add($f);
+        }
+
+        // label
+        $f = $this->modules->get("InputfieldText");
+        $f->label = _("Label");
+        $f->attr('name', "{$name}_label");
+        $f->attr('value', $value->label);
+        if ($this->languageSupport) {
+            $f->useLanguages = true;
+            foreach($this->languageSupport->otherLanguagePageIDs as $languageID) $f->attr("value$languageID", $value->{"label$languageID"});
+        }
+        $f->columnWidth = 33; 
+        $inputfields->add($f);
+
+        // target
+        $f = $this->modules->get("InputfieldText");
+        $f->label = _("Target");
+        $f->attr('name', "{$name}_target");
+        $f->attr('value', $value->target);
+        if ($value->targetPage) {
+            $f->notes =  _("Page ID:")." ".$value->targetPage->id;
+            if ($value->targetPage->hasStatus(Page::statusUnpublished)) $f->notes .= ' ('._('unpublished').')';
+        }
+        $f->columnWidth = 33; 
+        $inputfields->add($f);
+
+        // class
+        $f = $this->modules->get("InputfieldText");
+        $f->label = _("Class");
+        $f->attr('name', "{$name}_class");
+        $f->attr('value', $value->class);
+        $f->columnWidth = 33; 
+        $inputfields->add($f);
+
+        return $inputfields->render();
+    }
+
+    /**
+     * Process the input from the given WireInputData (usually $input->get or $input->post), load and clean the value for use in this Inputfield.
+     *
+     * @param WireInputData $input
+     * @return $this
+     *
+     */
+    public function ___processInput(WireInputData $input) {
+
+        $name = $this->attr('name');
+        $value = $this->attr('value');
+
+        $input_names = array(
+                'label' => "{$name}_label",
+                'target' => "{$name}_target",
+                'class' => "{$name}_class"
+            );
+        if ($this->languageSupport) {
+            foreach ($this->languageSupport->otherLanguagePageIDs as $languageID) $input_names["label$languageID"] = "{$name}_label__$languageID";
+        }
+
+        // loop inputs and set them if changed
+        foreach($input_names as $key => $name) {
+            if(isset($input->$name) && $value->$key != $input->$name) {
+
+                if ($key == 'target') {
+                    if (ctype_digit("{$input->$name}")) {
+                        $target = wire('pages')->get("id={$input->$name},include=all");
+                        if (!$target->id) {
+                            $this->error($this->_("Page with ID={$input->$name} doesn't exist"));
+                            return $this;
+                        }
+                    }
+                    else $target = wire('pages')->get("path={$input->$name},include=all");
+                    if ($target->id) {                                      
+                        $adminPage = wire('pages')->get("id=".$this->config->adminRootPageID);
+                        if($target->hasStatus(Page::statusUnpublished)) $this->warning($this->_("The page with ID={$input->$name} is currently unpublished."));
+                        else if($target->parents()->has($adminPage) || $target == $adminPage) $this->warning($this->_("The page with ID={$input->$name} resides under the Admin page tree."));
+                    }
+                }            
+                $value->set($key, $input->$name);
+                $this->trackChange('value');
+            }
+        }
+        return $this;
+    }
+
+}

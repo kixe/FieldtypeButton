@@ -1,0 +1,223 @@
+<?php
+
+/**
+ * ProcessWire Button Fieldtype
+ *
+ * Field that stores 3 values for label, target and class.
+ * Define html output in field settings.
+ * @author kixe (Christoph Thelen) 13.06.16
+ * @license Licensed under GNU/GPL v3
+ * @link http://processwire.com/talk
+ * 
+ * ProcessWire 2.x, 3.x 
+ * Copyright (C) 2016 by Ryan Cramer 
+ * Licensed under GNU/GPL v2, see LICENSE.TXT
+ * 
+ * http://processwire.com
+ *
+ *
+ *
+ */
+
+class FieldtypeButton extends Fieldtype {
+
+
+    public static function getModuleInfo() {
+        return array(
+            'title' => __('Button Fieldtype', __FILE__), // Module Title
+            'summary' => __('Field that stores 3 values for label, target and class (CSS). Output markup configurable in field settings.', __FILE__), // Module Summary
+            'version' => 100,
+            'author' => 'kixe',
+            'installs' => 'InputfieldCTAButton'
+        );
+    }
+
+    /**
+     * Initialize this Fieldtype
+     *
+     */
+    public function init() {
+        parent::init();
+        require_once(__DIR__."/Button.php"); 
+    }
+
+    /**
+     * Format value for output
+     * @info output formatting is done by Button class
+     */
+    public function ___formatValue(Page $page, Field $field, $value) {
+        // output formatting is done by Button class
+        return $value;
+    }
+
+    /**
+     * @return Inputfield for this fieldtype
+     *
+     */
+    public function getInputfield(Page $page, Field $field) {
+        $inputfield =  $this->modules->get('InputfieldCTAButton');
+        return $inputfield;
+    }
+
+    /**
+     * nothing compatible
+     *
+     */
+    public function ___getCompatibleFieldtypes(Field $field) {
+        //return null;
+        $fieldtypes = $this->wire(new Fieldtypes());
+        foreach($this->wire('fieldtypes') as $fieldtype) {
+            if($fieldtype instanceof FieldtypeButton) {
+                $fieldtypes->add($fieldtype);
+            }
+        }
+        return $fieldtypes; 
+    }
+
+    /**
+     * Return a blank ready-to-populate version of a field of this type
+     *
+     */
+    public function getBlankValue(Page $page, Field $field) {
+        $button = new Button();
+        if ($field->html) $button->html = $field->html;
+        $button->setTrackChanges(true); 
+        return $button; 
+    }
+
+    /**
+     * Given a raw value (value as stored in DB), return the value as it would appear in a Page object
+     *
+     * @param Page $page
+     * @param Field $field
+     * @param string|int|array $value
+     * @return string|int|array|object $value
+     *
+     */
+    public function ___wakeupValue(Page $page, Field $field, $value) {
+
+        // if for some reason we already get a valid value, then just return it
+        if($value instanceof Button) return $value; 
+
+        // start a blank value to be populated
+        $button = $this->getBlankValue($page, $field); 
+
+        // if we were given a blank value, then we've got nothing to do: just return a blank Button object
+        if(empty($value) || !is_array($value)) return $button; 
+
+        // create new Button object
+        $button->label = $value['data']; // converting 'data' to 'label'
+        $button->target = $value['target'];
+        $button->class = $value['class'];
+
+        // $button->resetTrackChanges(); 
+
+        return $button;  
+    }
+
+    /**
+     * Given an 'awake' value, as set by wakeupValue, convert the value back to a basic type for storage in DB. 
+     *              
+     * @param Page $page
+     * @param Field $field
+     * @param Button object $value
+     * @return array
+     *
+     */
+    public function ___sleepValue(Page $page, Field $field, $value) {
+
+        $sleepValue = array();
+
+        // if we are given something other than a Button object, 
+        // then just return a blank array
+        if(!$value instanceof Button) return $sleepValue; 
+
+        $sleepValue = array(
+            'data' => $value->label, // note: label is becoming data
+            'class' => $value->class
+        ); 
+
+        if ($value->targetPage) $sleepValue['target'] = $value->targetPage->id;
+        else $sleepValue['target'] = $value->target;
+        return $sleepValue;
+    }
+
+    /**
+     * Given a value, make it clean for storage within a Page
+     *
+     */
+    public function sanitizeValue(Page $page, Field $field, $value) {
+
+        // if given a blank value, return a valid blank value
+        if(empty($value)) return $this->getBlankValue($page, $field, $value); 
+
+        // if given something other than a Button object, throw an error
+        if(!$value instanceof Button) {
+            throw new WireException("Value set to field '$field->name' must be a Button object"); 
+        }       
+
+        // note that sanitization of individual fields within a given event is already 
+        // performed by the Button::set() method, so we don't need to do anything else here.
+
+        return $value;  
+    }
+
+    /**
+     * Return the database schema that defines a Button
+     *
+     */
+    public function getDatabaseSchema(Field $field) {
+
+        $schema = parent::getDatabaseSchema($field);
+
+        $schema['data'] = 'tinytext NOT NULL';
+        $schema['target'] = 'text NOT NULL'; 
+        $schema['class'] = 'tinytext NOT NULL'; 
+        $schema['keys']['data'] = 'KEY `data` (`data`(255))'; 
+        $schema['keys']['class'] = 'KEY class (`class`(255))';
+        $schema['keys']['target_exact'] = 'KEY `target_exact` (`target`(250))';
+        $schema['keys']['target'] = 'FULLTEXT KEY `target` (`target`)';
+
+        return $schema;
+    }
+
+    /**
+     * Method called when the field is database-queried from a selector 
+     *
+     */
+    public function getMatchQuery($query, $table, $subfield, $operator, $value) {
+        // If searching 'label' then assume our default (data) field 
+        if($subfield == 'label') $subfield = 'data';
+        return parent::getMatchQuery($query, $table, $subfield, $operator, $value); 
+    }
+
+    /**
+     * Get any inputfields used for configuration of this Fieldtype.
+     *
+     * This is in addition any configuration fields supplied by the parent Inputfield.
+     *
+     * @param Field $field
+     * @return InputfieldWrapper
+     *
+     */
+    public function ___getConfigInputfields(Field $field) {
+
+        $inputfields = parent::___getConfigInputfields($field);
+        $f = $this->modules->get("InputfieldTextarea");
+        $f->label = "Output String";
+        $f->attr('name', 'html');
+        $f->attr('value', $field->html);
+        $f->attr('rows', 5);
+        $f->description = "Markup for the output. Use curled brackets to implement 'label', 'target' and/or 'class'. If target is detected as internal page 'targetPage' will be populated as the page object. Use dot syntax to get any page field value or page property.";
+        $f->notes = "default: <a href=\"{target}\" class=\"{class}\">{label}</a>";        
+        $inputfields->append($f);
+
+        $f = $this->modules->get('InputfieldCheckbox');
+        $f->attr('name', 'provide_api'); 
+        $f->label = __('Provide Description of API usage in Inputfield.');
+        $f->attr('checked', $field->provide_api ? 'checked' : '' );
+        $inputfields->append($f);
+
+        return $inputfields;
+     }
+}
