@@ -84,7 +84,7 @@ class InputfieldCTAButton extends Inputfield {
                 "\$page->$name" => _('Returns the Button object.'),
                 "echo \$page->$name" => _("Returns the complete markup string with populated string tags in current user language. Short version for")." <em style='color:rgb(59, 161, 234)'>\$page->{$name}->render()</em>.",
                 "\$page->{$name}->label" => _('Returns the button label in the default language.'),            
-                "\$page->{$name}->target" => _('Returns user language specific page url if target is detected as internal page. Otherwise any string (http://example.org) Default: empty string.'),
+                "\$page->{$name}->target" => _('Returns user language specific page url if target is detected as internal page. Any url string is allowed as value (http://example.org) Default: empty string.'),
                 "\$page->{$name}->targetPage" => _('Returns a Page object if target is detected as internal page. Default: NULL'),
                 "\$page->{$name}->class" => _('Returns the button CSS class. Default: empty string.'),
                 "\$page->{$name}->html" => _("Returns the markup string, as set in")." <a href='$fieldSettingsPath'>Field Settings</a>. ".
@@ -92,9 +92,10 @@ class InputfieldCTAButton extends Inputfield {
                 );
 
             if ($this->languageSupport) {
+                $description = _("Returns language specific (%s) button label.");
                 foreach($this->languageSupport->otherLanguagePageIDs as $languageID) {
                     $lang = $this->languages->get("id=$languageID");
-                    $content["\$page->{$name}->label$languageID"] = _("Returns language specific ($lang->name) button label.");
+                    $content["\$page->{$name}->label$languageID"] = sprintf($description, $lang->name);
                 }
             }
 
@@ -186,15 +187,15 @@ class InputfieldCTAButton extends Inputfield {
                     if (ctype_digit("{$input->$name}")) {
                         $target = wire('pages')->get("id={$input->$name},include=all");
                         if (!$target->id) {
-                            $this->error($this->_("Page with ID={$input->$name} doesn't exist"));
+                            $this->error(sprintf($this->_("Page with ID=%d doesn't exist"), $input->$name));
                             return $this;
                         }
                     }
                     else $target = wire('pages')->get("path={$input->$name},include=all");
                     if ($target->id) {                                      
                         $adminPage = wire('pages')->get("id=".$this->config->adminRootPageID);
-                        if($target->hasStatus(Page::statusUnpublished)) $this->warning($this->_("The page with ID={$input->$name} is currently unpublished."));
-                        else if($target->parents()->has($adminPage) || $target == $adminPage) $this->warning($this->_("The page with ID={$input->$name} resides under the Admin page tree."));
+                        if($target->hasStatus(Page::statusUnpublished)) $this->warning(sprintf($this->_("The page with ID=%d is currently unpublished."), $input->$name));
+                        else if($target->parents()->has($adminPage) || $target == $adminPage) $this->warning(sprintf($this->_("The page with ID=%d resides under the Admin page tree."), $input->$name));
                     }
                 }            
                 $value->set($key, $input->$name);

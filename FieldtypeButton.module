@@ -204,12 +204,12 @@ class FieldtypeButton extends Fieldtype {
 
         $inputfields = parent::___getConfigInputfields($field);
         $f = $this->modules->get("InputfieldTextarea");
-        $f->label = "Output String";
+        $f->label = __("Output String");
         $f->attr('name', 'html');
         $f->attr('value', $field->html);
         $f->attr('rows', 5);
-        $f->description = "Markup for the output. Use curled brackets to implement 'label', 'target' and/or 'class'. If target is detected as internal page 'targetPage' will be populated as the page object. Use dot syntax to get any page field value or page property.";
-        $f->notes = "default: <a href=\"{target}\" class=\"{class}\">{label}</a>";        
+        $f->description = __("Markup for the output. Use curled brackets to implement 'label', 'target' and/or 'class'. If target is detected as internal page 'targetPage' will be populated as the page object. Use dot syntax to get any page field value or page property of the target.");
+        $f->notes = __('default').": <a href=\"{target}\" class=\"{class}\">{label}</a>";        
         $inputfields->append($f);
 
         $f = $this->modules->get('InputfieldCheckbox');
