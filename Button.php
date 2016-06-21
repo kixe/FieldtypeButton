@@ -76,7 +76,9 @@ class Button extends WireData {
     public function render() {
         $userLanguageID = wire('user')->language->id;
         if ($this->languageSupport && $this->languages->getDefault()->id != $userLanguageID) {
-            $this->label = $this->{"label$userLanguageID"};
+            $_label = $this->{"label$userLanguageID"};
+            // fallback to default language  if label is empty
+            $this->label = $_label? $_label:$this->label;
         }
         return wirePopulateStringTags($this->html, $this);
     }
