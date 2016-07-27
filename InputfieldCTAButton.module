@@ -23,7 +23,7 @@ class InputfieldCTAButton extends Inputfield {
         return array(
             'title' => __('Inputfield Button', __FILE__),
             'summary' => __('Create and Edit a CTA button.', __FILE__),
-            'version' => 100,
+            'version' => 101,
             'author' => 'kixe',
             'requires' => array("FieldtypeButton")
         );
@@ -156,6 +156,22 @@ class InputfieldCTAButton extends Inputfield {
         $inputfields->add($f);
 
         return $inputfields->render();
+    }
+
+    /**
+     * This Inputfield is defined empty, if the label field is not populated
+     *
+     * Used by the 'required' check to see if the field is populated.
+     * Overwrites parent function Inputfield::isEmpty()
+     *
+     * @return bool
+     * @since 1.0.1 - 27.07.16
+     *
+     */
+    public function isEmpty() {
+        $value = $this->attr('value');
+        if (is_object($value) && !strlen("{$value->label}")) return true;
+        return false; 
     }
 
     /**
