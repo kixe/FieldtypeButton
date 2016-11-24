@@ -14,12 +14,16 @@ class Button extends WireData {
         $this->set('target', ''); // expecting page (object, id, path) or any url string
         $this->set('class', '');
         $this->set('html', '<a href="{target}" class="{class}">{label}</a>');
-        parent::set('targetPage',null); // will be set if target is detected as instance of page
+        parent::set('targetPage', null); // will be set if target is detected as instance of page
         if($this->modules->isInstalled('LanguageSupport')) $this->languageSupport = $this->modules->get('LanguageSupport');
     }
 
     private function setTargetPage(Page $page) {
         return parent::set('targetPage', $page);
+    }
+
+    private function unsetTargetPage() {
+        return parent::set('targetPage', null);
     }
 
     public function set($key, $value) {
@@ -40,13 +44,19 @@ class Button extends WireData {
                 // get page by path
                 else {
                     $_target = wire('pages')->get("path=$value");
-                    $value = $_target->id? $_target:$this->sanitizer->url($value);
+                    if ($_target->id) $value = $_target;
+                    else if ($value) {
+                        $_value = $this->sanitizer->url($value);
+                        if (!$_value) $this->set('targetSanitized', $value);
+                        $value = $_value;
+                    }
                 }                           
                 if ($value instanceof Page) {
                     $this->setTargetPage($value);
                     $languageSupportPageNames = $this->modules->isInstalled('LanguageSupportPageNames');
                     $value = $languageSupportPageNames? $value->localUrl(wire('user')->language):$value->url;
                 }
+                else $this->unsetTargetPage();
             }
             else if (!is_string($value) && $value !== null) {
                 throw new WireException("Button property $key only accepts string values");

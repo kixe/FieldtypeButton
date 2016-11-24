@@ -14,8 +14,8 @@
  * Licensed under GNU/GPL v2, see LICENSE.TXT
  * 
  * http://processwire.com
- *
- *
+ * @version 1.0.1
+ * @since 1.0.1 option to hide input for class via field settings (2016-07-28)
  *
  */
 
@@ -26,7 +26,7 @@ class FieldtypeButton extends Fieldtype {
         return array(
             'title' => __('Button Fieldtype', __FILE__), // Module Title
             'summary' => __('Field that stores 3 values for label, target and class (CSS). Output markup configurable in field settings.', __FILE__), // Module Summary
-            'version' => 100,
+            'version' => 101,
             'author' => 'kixe',
             'installs' => 'InputfieldCTAButton'
         );
@@ -43,10 +43,9 @@ class FieldtypeButton extends Fieldtype {
 
     /**
      * Format value for output
-     * @info output formatting is done by Button class
+     * @see __DIR__."/Button.php" output formatting is done by Button class
      */
     public function ___formatValue(Page $page, Field $field, $value) {
-        // output formatting is done by Button class
         return $value;
     }
 
@@ -77,6 +76,7 @@ class FieldtypeButton extends Fieldtype {
     /**
      * Return a blank ready-to-populate version of a field of this type
      *
+     * @return object
      */
     public function getBlankValue(Page $page, Field $field) {
         $button = new Button();
@@ -90,8 +90,8 @@ class FieldtypeButton extends Fieldtype {
      *
      * @param Page $page
      * @param Field $field
-     * @param string|int|array $value
-     * @return string|int|array|object $value
+     * @param array|object $value
+     * @return object $value
      *
      */
     public function ___wakeupValue(Page $page, Field $field, $value) {
@@ -216,6 +216,14 @@ class FieldtypeButton extends Fieldtype {
         $f->attr('name', 'provide_api'); 
         $f->label = __('Provide Description of API usage in Inputfield.');
         $f->attr('checked', $field->provide_api ? 'checked' : '' );
+        $f->columnWidth = 50; 
+        $inputfields->append($f);
+
+        $f = $this->modules->get('InputfieldCheckbox');
+        $f->attr('name', 'hide_class'); 
+        $f->label = __('Hide Input for CSS class in Inputfield.');
+        $f->attr('checked', $field->hide_class ? 'checked' : '' );
+        $f->columnWidth = 50; 
         $inputfields->append($f);
 
         return $inputfields;

@@ -13,7 +13,8 @@
  * Licensed under GNU/GPL v2, see LICENSE.TXT
  * 
  * http://processwire.com
- *
+ * @version 1.0.1
+ * @since 1.0.1 added function isEmpty() to define this Inputfield as empty, if the label field is not populated (2016-07-27)
  *
  */
 
@@ -132,7 +133,7 @@ class InputfieldCTAButton extends Inputfield {
             $f->useLanguages = true;
             foreach($this->languageSupport->otherLanguagePageIDs as $languageID) $f->attr("value$languageID", $value->{"label$languageID"});
         }
-        $f->columnWidth = 33; 
+        $f->columnWidth = $field->hide_class? 50:33; 
         $inputfields->add($f);
 
         // target
@@ -144,16 +145,18 @@ class InputfieldCTAButton extends Inputfield {
             $f->notes =  _("Page ID:")." ".$value->targetPage->id;
             if ($value->targetPage->hasStatus(Page::statusUnpublished)) $f->notes .= ' ('._('unpublished').')';
         }
-        $f->columnWidth = 33; 
+        $f->columnWidth = $field->hide_class? 50:33; 
         $inputfields->add($f);
 
         // class
-        $f = $this->modules->get("InputfieldText");
-        $f->label = _("Class");
-        $f->attr('name', "{$name}_class");
-        $f->attr('value', $value->class);
-        $f->columnWidth = 33; 
-        $inputfields->add($f);
+        if (!$field->hide_class) {
+            $f = $this->modules->get("InputfieldText");
+            $f->label = _("Class");
+            $f->attr('name', "{$name}_class");
+            $f->attr('value', $value->class);
+            $f->columnWidth = 33; 
+            $inputfields->add($f);
+        }
 
         return $inputfields->render();
     }
@@ -165,7 +168,7 @@ class InputfieldCTAButton extends Inputfield {
      * Overwrites parent function Inputfield::isEmpty()
      *
      * @return bool
-     * @since 1.0.1 - 27.07.16
+     * @since 1.0.1 (2016-07-27)
      *
      */
     public function isEmpty() {
