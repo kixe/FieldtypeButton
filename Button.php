@@ -2,9 +2,10 @@
 
 /**
  * Helper WireData Class to hold a Button object
- * @version 1.0.3
+ * @version 1.0.4
  * @since 1.0.2 fixed bug in render() if single language mode (2016-12-06)
  * @since 1.0.3 synchronized version numbering (2016-12-06)
+ * @since 1.0.4 - fixed repeater issue (2016-12-06)
  *
  */
 

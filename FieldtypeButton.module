@@ -14,10 +14,10 @@
  * Licensed under GNU/GPL v2, see LICENSE.TXT
  * 
  * http://processwire.com
- * @version 1.0.3
+ * @version 1.0.4
  * @since 1.0.1 option to hide input for class via field settings (2016-07-28)
  * @since 1.0.3 synchronized version numbering (2016-12-06)
-
+ * @since 1.0.4 - fixed repeater issue (2016-12-06)
  *
  */
 
@@ -28,10 +28,20 @@ class FieldtypeButton extends Fieldtype {
         return array(
             'title' => __('Button Fieldtype', __FILE__), // Module Title
             'summary' => __('Field that stores 3 values for label, target and class (CSS). Output markup configurable in field settings.', __FILE__), // Module Summary
-            'version' => 103,
+            'version' => 104,
             'author' => 'kixe',
             'installs' => 'InputfieldCTAButton'
         );
+    }
+
+    /**
+     * Construct the Fieldtype and populate default settings and column types
+     *
+     */
+    public function __construct() {
+        parent::__construct();
+
+        require_once(dirname(__FILE__) . '/Button.php');
     }
 
     /**
@@ -39,8 +49,7 @@ class FieldtypeButton extends Fieldtype {
      *
      */
     public function init() {
-        parent::init();
-        require_once(__DIR__."/Button.php"); 
+        parent::init(); 
     }
 
     /**
@@ -53,11 +62,16 @@ class FieldtypeButton extends Fieldtype {
     }
 
     /**
-     * @return Inputfield for this fieldtype
+     * Return the Inputfield for this fieldtype
+     * 
+     * @param Page $page
+     * @param Field $field
+     * @return Inputfield
      *
      */
     public function getInputfield(Page $page, Field $field) {
-        $inputfield =  $this->modules->get('InputfieldCTAButton');
+        $inputfield =  $this->wire('modules')->get('InputfieldCTAButton');
+        $inputfield->setField($field);
         return $inputfield;
     }
 
@@ -231,4 +245,5 @@ class FieldtypeButton extends Fieldtype {
 
         return $inputfields;
      }
+
 }

@@ -13,11 +13,12 @@
  * Licensed under GNU/GPL v2, see LICENSE.TXT
  * 
  * http://processwire.com
- * @version 1.0.3
+ * @version 1.0.4
  * @since 1.0.1 added function isEmpty() to define this Inputfield as empty, if the label field is not populated (2016-07-27)
  * @since 1.0.2 disallow admin pages. Sanitized Selector string.
  *              Show Error if Sanitizer::url (target) returns an empty string. Modified Notice strings (2016-09-16)
  * @since 1.0.3 - synchronised version numbering (2016-12-06)
+ * @since 1.0.4 - fixed repeater issue (2016-12-06)
  *
  */
 
@@ -27,13 +28,14 @@ class InputfieldCTAButton extends Inputfield {
         return array(
             'title' => __('Inputfield Button', __FILE__),
             'summary' => __('Create and Edit a CTA button.', __FILE__),
-            'version' => 103,
+            'version' => 104,
             'author' => 'kixe',
             'requires' => array("FieldtypeButton")
         );
     }
 
     public $languageSupport;
+    protected $field;
 
     /**
      * Construct the Inputfield, setting defaults for all properties
@@ -42,6 +44,16 @@ class InputfieldCTAButton extends Inputfield {
     public function __construct() {
         $this->languageSupport = false;     
         parent::__construct();
+    }
+
+    /**
+     * Set the current Field
+     *
+     * @param Field $field
+     *
+     */
+    public function setField(Field $field) {
+        $this->field = $field; 
     }
 
     /**
@@ -61,7 +73,7 @@ class InputfieldCTAButton extends Inputfield {
     public function ___render() {
 
         $name = $this->attr('name');
-        $field = wire('fields')->get("name=$name");
+        $field = $this->field;
         $fieldSettingsPath = wire('config')->urls->admin."setup/field/edit?id=$field->id#fieldtypeConfig";
  
         if ($this->attr('value')) $value = $this->attr('value');

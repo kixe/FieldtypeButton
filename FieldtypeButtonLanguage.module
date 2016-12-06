@@ -8,9 +8,10 @@
  * @author kixe (Christoph Thelen) 13.06.16
  * @license Licensed under GNU/GPL v3
  * @link http://processwire.com/talk
- * @version 1.0.3
+ * @version 1.0.4
  * @since 1.0.2 - disable language support if disabled on template base (advanced tab) (2016-09-04)
  * @since 1.0.3 - synchronised version numbering (2016-12-06)
+ * @since 1.0.4 - fixed repeater issue (2016-12-06)
  * 
  * ProcessWire 2.x, 3.x 
  * Copyright (C) 2016 by Ryan Cramer 
@@ -27,7 +28,7 @@ class FieldtypeButtonLanguage extends FieldtypeButton {
 	public static function getModuleInfo() {
 		return array(
 			'title' => 'Button Fieldtype (Multi-language)',
-			'version' => 103,
+			'version' => 104,
 			'summary' => 'Multilanguage Extension for FieldtypeButton.',
 			'author' => 'kixe',
             'installs' => 'FieldtypeButton',
@@ -36,17 +37,30 @@ class FieldtypeButtonLanguage extends FieldtypeButton {
 
     public $languageSupport;
 
+    /**
+     * Construct the Fieldtype and populate default settings and column types
+     *
+     */
+    public function __construct() {
+        parent::__construct();
+    }
+
     public function init() {
     	parent::init();
     	$this->languageSupport = $this->modules->get('LanguageSupport');
     }
 
     /**
-     * @return Inputfield for this fieldtype
+     * Return the Inputfield for this fieldtype
+     * 
+     * @param Page $page
+     * @param Field $field
+     * @return Inputfield
      *
      */
     public function getInputfield(Page $page, Field $field) {
-        $inputfield =  $this->modules->get('InputfieldCTAButton');
+        $inputfield =  $this->wire('modules')->get('InputfieldCTAButton');
+        $inputfield->setField($field);
         $inputfield->languageSupport = $page->template->noLang? false: $this->languageSupport;
         return $inputfield;
     }
