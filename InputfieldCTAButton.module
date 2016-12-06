@@ -13,8 +13,10 @@
  * Licensed under GNU/GPL v2, see LICENSE.TXT
  * 
  * http://processwire.com
- * @version 1.0.1
+ * @version 1.0.2
  * @since 1.0.1 added function isEmpty() to define this Inputfield as empty, if the label field is not populated (2016-07-27)
+ * @since 1.0.2 disallow admin pages. Sanitized Selector string.
+ *              Show Error if Sanitizer::url (target) returns an empty string. Modified Notice strings (2016-09-16)
  *
  */
 
@@ -24,7 +26,7 @@ class InputfieldCTAButton extends Inputfield {
         return array(
             'title' => __('Inputfield Button', __FILE__),
             'summary' => __('Create and Edit a CTA button.', __FILE__),
-            'version' => 101,
+            'version' => 102,
             'author' => 'kixe',
             'requires' => array("FieldtypeButton")
         );
@@ -74,26 +76,26 @@ class InputfieldCTAButton extends Inputfield {
         if ($field->provide_api) {
             $table = $this->modules->get("MarkupAdminDataTable");
             $table->setEncodeEntities(false);
-            $header1 = _('Variable');
-            $header2 = _('Value');
-            $header3 = _('Description');
+            $header1 = $this->_('Variable');
+            $header2 = $this->_('Value');
+            $header3 = $this->_('Description');
             $table->headerRow(array($header1, $header2, $header3));
 
             $this->modules->get('JqueryUI')->use('modal');
 
             $content = array(
-                "\$page->$name" => _('Returns the Button object.'),
-                "echo \$page->$name" => _("Returns the complete markup string with populated string tags in current user language. Short version for")." <em style='color:rgb(59, 161, 234)'>\$page->{$name}->render()</em>.",
-                "\$page->{$name}->label" => _('Returns the button label in the default language.'),            
-                "\$page->{$name}->target" => _('Returns user language specific page url if target is detected as internal page. Any url string is allowed as value (http://example.org) Default: empty string.'),
-                "\$page->{$name}->targetPage" => _('Returns a Page object if target is detected as internal page. Default: NULL'),
-                "\$page->{$name}->class" => _('Returns the button CSS class. Default: empty string.'),
-                "\$page->{$name}->html" => _("Returns the markup string, as set in")." <a href='$fieldSettingsPath'>Field Settings</a>. ".
-                _("Placeholders (item properties) surrounded with curled brackets. If 'targetPage' is defined use dot syntax to get any field value or property of the target.")
+                "\$page->$name" => $this->_('Returns the Button object.'),
+                "echo \$page->$name" => $this->_("Returns the complete markup string with populated string tags in current user language. Short version for")." <em style='color:rgb(59, 161, 234)'>\$page->{$name}->render()</em>.",
+                "\$page->{$name}->label" => $this->_('Returns the button label in the default language.'),            
+                "\$page->{$name}->target" => $this->_('Returns user language specific page url if target is detected as internal page. Any url string is allowed as value (http://example.org) Default: empty string.'),
+                "\$page->{$name}->targetPage" => $this->_('Returns a Page object if target is detected as internal page. Default: NULL'),
+                "\$page->{$name}->class" => $this->_('Returns the button CSS class. Default: empty string.'),
+                "\$page->{$name}->html" => $this->_("Returns the markup string, as set in")." <a href='$fieldSettingsPath'>Field Settings</a>. ".
+                $this->_("Placeholders (item properties) surrounded with curled brackets. If 'targetPage' is defined use dot syntax to get any field value or property of the target.")
                 );
 
             if ($this->languageSupport) {
-                $description = _("Returns language specific (%s) button label.");
+                $description = $this->_("Returns language specific (%s) button label.");
                 foreach($this->languageSupport->otherLanguagePageIDs as $languageID) {
                     $lang = $this->languages->get("id=$languageID");
                     $content["\$page->{$name}->label$languageID"] = sprintf($description, $lang->name);
@@ -119,14 +121,14 @@ class InputfieldCTAButton extends Inputfield {
 
             $f = $this->modules->get("InputfieldMarkup");
             $f->value = $table->render();
-            $f->label = _("API");
+            $f->label = $this->_("API");
             $f->collapsed = Inputfield::collapsedYes;
             $inputfields->add($f);
         }
 
         // label
         $f = $this->modules->get("InputfieldText");
-        $f->label = _("Label");
+        $f->label = $this->_("Label");
         $f->attr('name', "{$name}_label");
         $f->attr('value', $value->label);
         if ($this->languageSupport) {
@@ -138,11 +140,11 @@ class InputfieldCTAButton extends Inputfield {
 
         // target
         $f = $this->modules->get("InputfieldText");
-        $f->label = _("Target");
+        $f->label = $this->_("Target");
         $f->attr('name', "{$name}_target");
         $f->attr('value', $value->target);
         if ($value->targetPage) {
-            $f->notes =  _("Page ID:")." ".$value->targetPage->id;
+            $f->notes =  $this->_("Page ID:")." ".$value->targetPage->id;
             if ($value->targetPage->hasStatus(Page::statusUnpublished)) $f->notes .= ' ('._('unpublished').')';
         }
         $f->columnWidth = $field->hide_class? 50:33; 
@@ -151,7 +153,7 @@ class InputfieldCTAButton extends Inputfield {
         // class
         if (!$field->hide_class) {
             $f = $this->modules->get("InputfieldText");
-            $f->label = _("Class");
+            $f->label = $this->_("Class");
             $f->attr('name', "{$name}_class");
             $f->attr('value', $value->class);
             $f->columnWidth = 33; 
@@ -188,6 +190,7 @@ class InputfieldCTAButton extends Inputfield {
 
         $name = $this->attr('name');
         $value = $this->attr('value');
+        // $value->targetSanitized = null;
 
         $input_names = array(
                 'label' => "{$name}_label",
@@ -202,7 +205,7 @@ class InputfieldCTAButton extends Inputfield {
         foreach($input_names as $key => $name) {
             if(isset($input->$name) && $value->$key != $input->$name) {
 
-                if ($key == 'target') {
+                if ($key == 'target' && !empty($input->$name)) {
                     if (ctype_digit("{$input->$name}")) {
                         $target = wire('pages')->get("id={$input->$name},include=all");
                         if (!$target->id) {
@@ -210,14 +213,22 @@ class InputfieldCTAButton extends Inputfield {
                             return $this;
                         }
                     }
-                    else $target = wire('pages')->get("path={$input->$name},include=all");
-                    if ($target->id) {                                      
+                    else $target = wire('pages')->get('path='.$this->sanitizer->selectorValue($input->$name).',include=all');
+                    if ($target->id) {                                 
                         $adminPage = wire('pages')->get("id=".$this->config->adminRootPageID);
-                        if($target->hasStatus(Page::statusUnpublished)) $this->warning(sprintf($this->_("The page with ID=%d is currently unpublished."), $input->$name));
-                        else if($target->parents()->has($adminPage) || $target == $adminPage) $this->warning(sprintf($this->_("The page with ID=%d resides under the Admin page tree."), $input->$name));
+                        if($target->hasStatus(Page::statusUnpublished)) $this->warning(sprintf($this->_("The selected page with ID=%d is currently unpublished"), $input->$name));
+                        else if($target->parents()->has($adminPage) || $target == $adminPage) {
+                            $this->error(sprintf($this->_("The page with ID=%d is not an allowed target because it resides under the Admin page tree"), $input->$name));
+                            return $this;
+                        }
                     }
-                }            
+                    else if (!$this->sanitizer->url($input->$name)) {
+                        $this->error(sprintf($this->_("The target '%s' is not a valid url"), $input->$name));
+                        return $this;
+                    }
+                }           
                 $value->set($key, $input->$name);
+                // $this->warning($value); // DEBUGGING: var dump Button object
                 $this->trackChange('value');
             }
         }

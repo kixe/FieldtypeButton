@@ -2,6 +2,8 @@
 
 /**
  * Helper WireData Class to hold a Button object
+ * @version 1.0.1
+ * @since 1.0.1 fixed bug in render() if single language mode
  *
  */
 
@@ -30,7 +32,7 @@ class Button extends WireData {
         $langLabels = array();
         if($this->languageSupport) {       
             $LanguagePageIDs = $this->languageSupport->otherLanguagePageIDs;
-            // $LanguagePageIDs[] = $languageSupport->defaultLanguagePageID;
+            // $LanguagePageIDs[] = $this->languageSupport->defaultLanguagePageID;
             foreach($LanguagePageIDs as $languageID) $langLabels[] = "label$languageID";
         }
         if (in_array($key, $langLabels) || $key == 'label' || $key == 'class' || $key == 'target' || $key == 'html') {
@@ -43,13 +45,8 @@ class Button extends WireData {
                 }
                 // get page by path
                 else {
-                    $_target = wire('pages')->get("path=$value");
-                    if ($_target->id) $value = $_target;
-                    else if ($value) {
-                        $_value = $this->sanitizer->url($value);
-                        if (!$_value) $this->set('targetSanitized', $value);
-                        $value = $_value;
-                    }
+                    $_target = wire('pages')->get('path='.$this->sanitizer->selectorValue($value));
+                    $value = $_target->id? $_target: $this->sanitizer->url($value);
                 }                           
                 if ($value instanceof Page) {
                     $this->setTargetPage($value);
@@ -84,11 +81,13 @@ class Button extends WireData {
      *
      */
     public function render() {
-        $userLanguageID = wire('user')->language->id;
-        if ($this->languageSupport && $this->languages->getDefault()->id != $userLanguageID) {
-            $_label = $this->{"label$userLanguageID"};
-            // fallback to default language  if label is empty
-            $this->label = $_label? $_label:$this->label;
+        if ($this->languageSupport) {
+            $userLanguageID = wire('user')->language->id;
+            if ($this->languages->getDefault()->id != $userLanguageID) {
+                $_label = $this->{"label$userLanguageID"};
+                // fallback to default language  if label is empty
+                $this->label = $_label? $_label:$this->label;
+            }
         }
         return wirePopulateStringTags($this->html, $this);
     }

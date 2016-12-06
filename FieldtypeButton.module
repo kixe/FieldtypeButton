@@ -43,7 +43,8 @@ class FieldtypeButton extends Fieldtype {
 
     /**
      * Format value for output
-     * @see __DIR__."/Button.php" output formatting is done by Button class
+     * @see Button.php
+     * output formatting is done by Button class
      */
     public function ___formatValue(Page $page, Field $field, $value) {
         return $value;
@@ -75,8 +76,8 @@ class FieldtypeButton extends Fieldtype {
 
     /**
      * Return a blank ready-to-populate version of a field of this type
-     *
      * @return object
+     *
      */
     public function getBlankValue(Page $page, Field $field) {
         $button = new Button();
@@ -90,8 +91,8 @@ class FieldtypeButton extends Fieldtype {
      *
      * @param Page $page
      * @param Field $field
-     * @param array|object $value
-     * @return object $value
+     * @param string|int|array $value
+     * @return string|int|array|object $value
      *
      */
     public function ___wakeupValue(Page $page, Field $field, $value) {
