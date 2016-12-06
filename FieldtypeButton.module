@@ -14,8 +14,10 @@
  * Licensed under GNU/GPL v2, see LICENSE.TXT
  * 
  * http://processwire.com
- * @version 1.0.1
+ * @version 1.0.3
  * @since 1.0.1 option to hide input for class via field settings (2016-07-28)
+ * @since 1.0.3 synchronized version numbering (2016-12-06)
+
  *
  */
 
@@ -26,7 +28,7 @@ class FieldtypeButton extends Fieldtype {
         return array(
             'title' => __('Button Fieldtype', __FILE__), // Module Title
             'summary' => __('Field that stores 3 values for label, target and class (CSS). Output markup configurable in field settings.', __FILE__), // Module Summary
-            'version' => 101,
+            'version' => 103,
             'author' => 'kixe',
             'installs' => 'InputfieldCTAButton'
         );
