@@ -18,7 +18,7 @@
  * @since 1.0.1 option to hide input for class via field settings (2016-07-28)
  * @since 1.0.3 synchronized version numbering (2016-12-06)
  * @since 1.0.4 - fixed repeater issue (2016-12-06)
- * @since 1.0.5 - added error for trashed pages (2017-06-16)
+ * @since 1.0.5 - added error and inputfield note for trashed pages (2017-06-16)
  *
  */
 
