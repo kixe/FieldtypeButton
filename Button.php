@@ -2,10 +2,11 @@
 
 /**
  * Helper WireData Class to hold a Button object
- * @version 1.0.4
+ * @version 1.0.5
  * @since 1.0.2 fixed bug in render() if single language mode (2016-12-06)
  * @since 1.0.3 synchronized version numbering (2016-12-06)
  * @since 1.0.4 - fixed repeater issue (2016-12-06)
+ * @since 1.0.5 - fixed issue if page id stored in DB doesn't exist (2017-06-16)
  *
  */
 
@@ -39,11 +40,12 @@ class Button extends WireData {
         }
         if (in_array($key, $langLabels) || $key == 'label' || $key == 'class' || $key == 'target' || $key == 'html') {
             if ($key == 'target') {
-                // get page by id
+                // get page by id. If id doesn't exist reset.
                 if (ctype_digit("$value")) {
                     $_target = wire('pages')->get("id=$value");
-                    if (!$_target->id) throw new WireException("Expecting Page ID if value is numeric. Page with ID=$value doesn't exist.");
-                    else $value = $_target;
+                    if ($_target->id) $value = $_target;
+                    // else throw new WireException("Expecting Page ID if value is numeric. Page with ID=$value doesn't exist.");
+                    else $value = null;
                 }
                 // get page by path
                 else {
