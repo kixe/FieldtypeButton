@@ -8,10 +8,12 @@
  * @author kixe (Christoph Thelen) 13.06.16
  * @license Licensed under GNU/GPL v3
  * @link http://processwire.com/talk
- * @version 1.0.4
+ * @version 1.0.6
  * @since 1.0.2 - disable language support if disabled on template base (advanced tab) (2016-09-04)
  * @since 1.0.3 - synchronised version numbering (2016-12-06)
  * @since 1.0.4 - fixed repeater issue (2016-12-06)
+ * @since 1.0.5 - fixed issue if page id stored in DB doesn't exist (2017-06-16)
+ * @since 1.0.6 - fixed issue button label in non default language (2018-07-18)
  * 
  * ProcessWire 2.x, 3.x 
  * Copyright (C) 2016 by Ryan Cramer 
@@ -28,7 +30,7 @@ class FieldtypeButtonLanguage extends FieldtypeButton {
 	public static function getModuleInfo() {
 		return array(
 			'title' => 'Button Fieldtype (Multi-language)',
-			'version' => 104,
+			'version' => 106,
 			'summary' => 'Multilanguage Extension for FieldtypeButton.',
 			'author' => 'kixe',
             'installs' => 'FieldtypeButton',
@@ -77,6 +79,10 @@ class FieldtypeButtonLanguage extends FieldtypeButton {
     public function ___wakeupValue(Page $page, Field $field, $value) {
     	if($value instanceof Button) return $value;
 		$button = parent::___wakeupValue($page, $field, $value);
+        if (!wire('user')->language->isDefault()) {
+            $languageID = wire('user')->language->id;
+            $button->label = $value["data$languageID"];
+        }
 		if (is_array($value)) {
 			foreach($this->languageSupport->otherLanguagePageIDs as $languageID) {
 			$button->{"label$languageID"} = $value["data$languageID"];

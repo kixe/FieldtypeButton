@@ -2,11 +2,12 @@
 
 /**
  * Helper WireData Class to hold a Button object
- * @version 1.0.5
+ * @version 1.0.6
  * @since 1.0.2 fixed bug in render() if single language mode (2016-12-06)
  * @since 1.0.3 synchronized version numbering (2016-12-06)
  * @since 1.0.4 - fixed repeater issue (2016-12-06)
  * @since 1.0.5 - fixed issue if page id stored in DB doesn't exist (2017-06-16)
+ * @since 1.0.6 - fixed issue button label in non default language (2018-07-18)
  *
  */
 
