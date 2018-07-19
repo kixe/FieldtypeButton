@@ -8,12 +8,13 @@
  * @author kixe (Christoph Thelen) 13.06.16
  * @license Licensed under GNU/GPL v3
  * @link http://processwire.com/talk
- * @version 1.0.6
+ * @version 1.0.7
  * @since 1.0.2 - disable language support if disabled on template base (advanced tab) (2016-09-04)
  * @since 1.0.3 - synchronised version numbering (2016-12-06)
  * @since 1.0.4 - fixed repeater issue (2016-12-06)
  * @since 1.0.5 - fixed issue if page id stored in DB doesn't exist (2017-06-16)
  * @since 1.0.6 - fixed issue button label in non default language (2018-07-18)
+ * @since 1.0.7 - added lang and langID properties modified output formatting (2018-07-19)
  * 
  * ProcessWire 2.x, 3.x 
  * Copyright (C) 2016 by Ryan Cramer 
@@ -30,7 +31,7 @@ class FieldtypeButtonLanguage extends FieldtypeButton {
 	public static function getModuleInfo() {
 		return array(
 			'title' => 'Button Fieldtype (Multi-language)',
-			'version' => 106,
+			'version' => 107,
 			'summary' => 'Multilanguage Extension for FieldtypeButton.',
 			'author' => 'kixe',
             'installs' => 'FieldtypeButton',
@@ -79,10 +80,6 @@ class FieldtypeButtonLanguage extends FieldtypeButton {
     public function ___wakeupValue(Page $page, Field $field, $value) {
     	if($value instanceof Button) return $value;
 		$button = parent::___wakeupValue($page, $field, $value);
-        if (!wire('user')->language->isDefault()) {
-            $languageID = wire('user')->language->id;
-            $button->label = $value["data$languageID"];
-        }
 		if (is_array($value)) {
 			foreach($this->languageSupport->otherLanguagePageIDs as $languageID) {
 			$button->{"label$languageID"} = $value["data$languageID"];
@@ -101,13 +98,25 @@ class FieldtypeButtonLanguage extends FieldtypeButton {
      *
      */
     public function ___sleepValue(Page $page, Field $field, $value) {
-
         $sleepValue = parent::___sleepValue($page, $field, $value);
         if (empty($sleepValue)) return $sleepValue;
 		foreach($this->languageSupport->otherLanguagePageIDs as $languageID) {
 			$sleepValue["data$languageID"] = $value->{"label$languageID"};
 		}	
         return $sleepValue;
+    }
+
+    /**
+     * Format value for output
+     * populate string tags in target
+     * set label to default language
+     *
+     */
+    public function ___formatValue(Page $page, Field $field, $value) {
+        if(!$value instanceof Button) return null;
+        $userLang = wire('user')->language;
+        if (wire('languages')->getDefault() != $userLang) $value->label = $value->{"label$userLang->id"};
+        return parent::___formatValue($page, $field, $value);
     }
 
     /**

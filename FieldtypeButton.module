@@ -14,12 +14,13 @@
  * Licensed under GNU/GPL v2, see LICENSE.TXT
  * 
  * http://processwire.com
- * @version 1.0.6
+ * @version 1.0.7
  * @since 1.0.1 option to hide input for class via field settings (2016-07-28)
  * @since 1.0.3 synchronized version numbering (2016-12-06)
  * @since 1.0.4 - fixed repeater issue (2016-12-06)
  * @since 1.0.5 - added error and inputfield note for trashed pages (2017-06-16)
  * @since 1.0.6 - fixed issue button label in non default language (2018-07-18)
+ * @since 1.0.7 - added lang and langID properties modified output formatting (2018-07-19)
  *
  */
 
@@ -30,7 +31,7 @@ class FieldtypeButton extends Fieldtype {
         return array(
             'title' => __('Button Fieldtype', __FILE__), // Module Title
             'summary' => __('Field that stores 3 values for label, target and class (CSS). Output markup configurable in field settings.', __FILE__), // Module Summary
-            'version' => 106,
+            'version' => 107,
             'author' => 'kixe',
             'installs' => 'InputfieldCTAButton'
         );
@@ -57,9 +58,10 @@ class FieldtypeButton extends Fieldtype {
     /**
      * Format value for output
      * @see Button.php
-     * output formatting is done by Button class
      */
     public function ___formatValue(Page $page, Field $field, $value) {
+        if(!$value instanceof Button) return null;
+        if (strpos($value->target, '{lang')) $value->target = wirePopulateStringTags($value->target, $value);
         return $value;
     }
 

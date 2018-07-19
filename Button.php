@@ -2,12 +2,13 @@
 
 /**
  * Helper WireData Class to hold a Button object
- * @version 1.0.6
+ * @version 1.0.7
  * @since 1.0.2 fixed bug in render() if single language mode (2016-12-06)
  * @since 1.0.3 synchronized version numbering (2016-12-06)
  * @since 1.0.4 - fixed repeater issue (2016-12-06)
  * @since 1.0.5 - fixed issue if page id stored in DB doesn't exist (2017-06-16)
  * @since 1.0.6 - fixed issue button label in non default language (2018-07-18)
+ * @since 1.0.7 - added lang and langID properties modified output formatting (2018-07-19)
  *
  */
 
@@ -21,7 +22,11 @@ class Button extends WireData {
         $this->set('class', '');
         $this->set('html', '<a href="{target}" class="{class}">{label}</a>');
         parent::set('targetPage', null); // will be set if target is detected as instance of page
-        if($this->modules->isInstalled('LanguageSupport')) $this->languageSupport = $this->modules->get('LanguageSupport');
+        if($this->modules->isInstalled('LanguageSupport')) {
+            $this->languageSupport = $this->modules->get('LanguageSupport');
+            $this->set('lang', $this->wire('user')->language);
+            $this->set('langID', $this->wire('user')->language->id);           
+        }
     }
 
     private function setTargetPage(Page $page) {
