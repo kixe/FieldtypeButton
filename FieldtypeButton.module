@@ -14,24 +14,25 @@
  * Licensed under GNU/GPL v2, see LICENSE.TXT
  * 
  * http://processwire.com
- * @version 1.0.7
+ * @version 1.0.9
  * @since 1.0.1 option to hide input for class via field settings (2016-07-28)
  * @since 1.0.3 synchronized version numbering (2016-12-06)
  * @since 1.0.4 - fixed repeater issue (2016-12-06)
  * @since 1.0.5 - added error and inputfield note for trashed pages (2017-06-16)
  * @since 1.0.6 - fixed issue button label in non default language (2018-07-18)
  * @since 1.0.7 - added lang and langID properties modified output formatting (2018-07-19)
+ * @since 1.0.8 - changed properties 'lang' to 'language'. 'lang' is placeholder for the homesegment now (2018-11-13)
+ * @since 1.0.9 - fixed bug check LanguageSupport (2019-04-16)
  *
  */
 
 class FieldtypeButton extends Fieldtype {
 
-
     public static function getModuleInfo() {
         return array(
             'title' => __('Button Fieldtype', __FILE__), // Module Title
             'summary' => __('Field that stores 3 values for label, target and class (CSS). Output markup configurable in field settings.', __FILE__), // Module Summary
-            'version' => 107,
+            'version' => 109,
             'author' => 'kixe',
             'installs' => 'InputfieldCTAButton'
         );
@@ -43,7 +44,6 @@ class FieldtypeButton extends Fieldtype {
      */
     public function __construct() {
         parent::__construct();
-
         require_once(dirname(__FILE__) . '/Button.php');
     }
 

@@ -26,6 +26,8 @@
  *
  */
 
+require_once(dirname(__FILE__) . '/FieldtypeButton.module'); 
+
 class FieldtypeButtonLanguage extends FieldtypeButton {
 
 	public static function getModuleInfo() {
