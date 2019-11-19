@@ -13,7 +13,7 @@
  * Licensed under GNU/GPL v2, see LICENSE.TXT
  * 
  * http://processwire.com
- * @version 1.0.9
+ * @version 1.1.0
  * @since 1.0.1 added function isEmpty() to define this Inputfield as empty, if the label field is not populated (2016-07-27)
  * @since 1.0.2 disallow admin pages. Sanitized Selector string.
  *              Show Error if Sanitizer::url (target) returns an empty string. Modified Notice strings (2016-09-16)
@@ -24,6 +24,11 @@
  * @since 1.0.7 - added lang and langID properties modified output formatting (2018-07-19)
  * @since 1.0.8 - changed properties 'lang' to 'language'. 'lang' is placeholder for the homesegment now (2018-11-13)
  * @since 1.0.9 - fixed bug check LanguageSupport (2019-04-16)
+ * @since 1.1.0 - added property 'langNonDefault' which will be replaced by homesegment
+ *                only for non default languages and property 'langForEn' which will
+ *                be replaced only by one single selected language
+ *                NOTE: if 'langNonDefault' and 'langForEn' is set the replacement is always appended by a slash
+ *                (2019-11-19)
  *
  */
 
@@ -33,7 +38,7 @@ class InputfieldCTAButton extends Inputfield {
         return array(
             'title' => __('Inputfield Button', __FILE__),
             'summary' => __('Create and Edit a CTA button.', __FILE__),
-            'version' => 109,
+            'version' => 110,
             'author' => 'kixe',
             'requires' => array("FieldtypeButton")
         );

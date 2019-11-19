@@ -2,7 +2,7 @@
 
 /**
  * Helper WireData Class to hold a Button object
- * @version 1.0.9
+ * @version 1.1.0
  * @since 1.0.2 fixed bug in render() if single language mode (2016-12-06)
  * @since 1.0.3 synchronized version numbering (2016-12-06)
  * @since 1.0.4 - fixed repeater issue (2016-12-06)
@@ -11,6 +11,11 @@
  * @since 1.0.7 - added lang and langID properties modified output formatting (2018-07-19)
  * @since 1.0.8 - changed properties 'lang' to 'language'. 'lang' is placeholder for the homesegment now (2018-11-13)
  * @since 1.0.9 - fixed bug check LanguageSupport (2019-04-16)
+ * @since 1.1.0 - added property 'langNonDefault' which will be replaced by homesegment
+ *                only for non default languages and property 'langForEn' which will
+ *                be replaced only by one single selected language
+ *                NOTE: if 'langNonDefault' and 'langForEn' is set the replacement is always appended by a slash
+ *                (2019-11-19)
  *
  */
 
@@ -30,7 +35,13 @@ class Button extends WireData {
             $hs = $this->wire('pages')->get(1)->localName($ul);
             $this->set('language', $ul);           
             $this->set('langID', $ul->id);    
-            $this->set('lang', $hs);       
+            $this->set('lang', $hs);  
+            $this->set('langNonDefault', $ul->isDefault()? '' : $hs . '/');
+            foreach ($this->wire('languages') as $language) {
+                $hs = $this->wire('pages')->get(1)->localName($language);
+                $lp = "langFor" . ucfirst($hs);
+                $this->set($lp, $ul == $language? $hs . '/' : '');
+            }
         }
     }
 
