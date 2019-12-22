@@ -119,10 +119,14 @@ class InputfieldCTAButton extends Inputfield {
 
             if ($this->languageSupport) {
                 $description = $this->_("Returns language specific (%s) button label.");
+                $description2 = $this->_("Returns language homesegment with appended slash (%s/) ONLY if current user language matches. Default: empty string.");
                 foreach($this->languageSupport->otherLanguagePageIDs as $languageID) {
                     $lang = $this->languages->get("id=$languageID");
+                    $hs = $this->wire('pages')->get(1)->localName($lang);
                     $content["\$page->{$name}->label$languageID"] = sprintf($description, $lang->name);
+                    $content["\$page->{$name}->langFor" . ucfirst($hs)] = sprintf($description2, $hs);
                 }
+                $content["\$page->{$name}->langNonDefault"] = $this->_("Returns language homesegment with appended slash ONLY if current user language is not the default language");
             }
 
             foreach ($content as $col1 => $col3) {
@@ -138,7 +142,7 @@ class InputfieldCTAButton extends Inputfield {
                 }
                 else $str = htmlentities($value->$property);
                 $col1 = "<em style='color:rgb(59, 161, 234)'>$col1</em>";
-                $col2 = $str;
+                $col2 = wirePopulateStringTags($str, $value);
                 $table->row(array($col1, $col2, $col3));
             }
 
