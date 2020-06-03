@@ -29,6 +29,7 @@
  *                be replaced only by one single selected language
  *                NOTE: if 'langNonDefault' and 'langForEn' is set the replacement is always appended by a slash
  *                (2019-11-19)
+ * @since 1.1.1 - fixed bug empty value (2020-05-26)
  *
  */
 
@@ -38,7 +39,7 @@ class InputfieldCTAButton extends Inputfield {
         return array(
             'title' => __('Inputfield Button', __FILE__),
             'summary' => __('Create and Edit a CTA button.', __FILE__),
-            'version' => 110,
+            'version' => 111,
             'author' => 'kixe',
             'requires' => array("FieldtypeButton")
         );
@@ -54,6 +55,7 @@ class InputfieldCTAButton extends Inputfield {
     public function __construct() {
         $this->languageSupport = false;     
         parent::__construct();
+        require_once(dirname(__FILE__) . '/Button.php');
     }
 
     /**
@@ -88,7 +90,7 @@ class InputfieldCTAButton extends Inputfield {
  
         if ($this->attr('value')) $value = $this->attr('value');
         else {
-            $value = array('label' => '','target' => '','class' => '');
+            $value = new Button();
             if ($this->languageSupport) {
                 foreach($this->languageSupport->otherLanguagePageIDs as $languageID) $value["label$languageID"] = '';
             }

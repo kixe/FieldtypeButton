@@ -2,7 +2,7 @@
 
 /**
  * Helper WireData Class to hold a Button object
- * @version 1.1.0
+ * @version 1.1.1
  * @since 1.0.2 fixed bug in render() if single language mode (2016-12-06)
  * @since 1.0.3 synchronized version numbering (2016-12-06)
  * @since 1.0.4 - fixed repeater issue (2016-12-06)
@@ -16,6 +16,7 @@
  *                be replaced only by one single selected language
  *                NOTE: if 'langNonDefault' and 'langForEn' is set the replacement is always appended by a slash
  *                (2019-11-19)
+ * @since 1.1.1 - added property 'httpTarget', and property aliasse 'url' (target) and 'httpUrl' (httpTarget) (2020-06-03)
  *
  */
 
@@ -77,9 +78,14 @@ class Button extends WireData {
                 if ($value instanceof Page) {
                     $this->setTargetPage($value);
                     $languageSupportPageNames = $this->modules->isInstalled('LanguageSupportPageNames');
-                    $value = $languageSupportPageNames? $value->localUrl(wire('user')->language):$value->url;
+                    $httpValue = $languageSupportPageNames? $value->httpUrl(wire('user')->language): $value->httpUrl;
+                    parent::set('httpTarget', $httpValue);
+                    $value = $languageSupportPageNames? $value->localUrl(wire('user')->language): $value->url;
                 }
-                else $this->unsetTargetPage();
+                else {
+                    $this->unsetTargetPage();
+                    parent::set('httpTarget', $value);
+                }
             }
             else if (!is_string($value) && $value !== null) {
                 throw new WireException("Button property $key only accepts string values");
@@ -88,7 +94,7 @@ class Button extends WireData {
             else if($key == 'html') $value = $this->sanitizer->textarea($value, array('stripTags' => false));
             else $value = $this->sanitizer->text($value);
         }
-        if ($key == 'targetPage') throw new WireException("Modifying of property 'targetPage' not allowed. Use 'target' instead.");
+        if (in_array($key, array('targetPage','httpTarget','httpUrl','url'))) throw new WireException("Modifying of property $key not allowed. Use 'target' instead.");
         else return parent::set($key, $value);
     }
 
@@ -98,6 +104,8 @@ class Button extends WireData {
      */
     public function get($key) {
         if (strpos($key,'targetPage') === 0 && strpos($key, '.') !== false) return parent::getDot($key);
+        if ($key == 'url') return parent::get('target');
+        if ($key == 'httpUrl') return parent::get('httpTarget');
         return parent::get($key);
     }
 
