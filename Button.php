@@ -1,8 +1,9 @@
-<?php
+<?php namespace ProcessWire;
 
 /**
  * Helper WireData Class to hold a Button object
- * @version 1.1.1
+ * @version 1.1.2
+ *
  * @since 1.0.2 fixed bug in render() if single language mode (2016-12-06)
  * @since 1.0.3 synchronized version numbering (2016-12-06)
  * @since 1.0.4 - fixed repeater issue (2016-12-06)
@@ -17,7 +18,7 @@
  *                NOTE: if 'langNonDefault' and 'langForEn' is set the replacement is always appended by a slash
  *                (2019-11-19)
  * @since 1.1.1 - added property 'httpTarget', and property aliasse 'url' (target) and 'httpUrl' (httpTarget) (2020-06-03)
- *
+ * @since 1.1.2 - added ProcessWire namespace, made render() hookable to optionally run textformatters (2022-03-03)
  */
 
 class Button extends WireData {
@@ -114,7 +115,7 @@ class Button extends WireData {
      * multi language support (label will be translated to user language value)
      *
      */
-    public function render() {
+    public function ___render() {
         if ($this->languageSupport) {
             $userLanguageID = wire('user')->language->id;
             if ($this->languages->getDefault()->id != $userLanguageID) {

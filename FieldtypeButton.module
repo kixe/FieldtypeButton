@@ -1,4 +1,4 @@
-<?php
+<?php namespace ProcessWire;
 
 /**
  * ProcessWire Button Fieldtype
@@ -23,6 +23,7 @@
  * @since 1.0.7 - added lang and langID properties modified output formatting (2018-07-19)
  * @since 1.0.8 - changed properties 'lang' to 'language'. 'lang' is placeholder for the homesegment now (2018-11-13)
  * @since 1.0.9 - fixed bug check LanguageSupport (2019-04-16)
+ * @since 1.1.0 - added ProcessWire namespace, added properties page and field to button object assigned via getBlankValue() (2022-03-03)
  *
  */
 
@@ -32,7 +33,7 @@ class FieldtypeButton extends Fieldtype {
         return array(
             'title' => __('Button Fieldtype', __FILE__), // Module Title
             'summary' => __('Field that stores 3 values for label, target and class (CSS). Output markup configurable in field settings.', __FILE__), // Module Summary
-            'version' => 109,
+            'version' => 110,
             'author' => 'kixe',
             'installs' => 'InputfieldCTAButton'
         );
@@ -101,6 +102,8 @@ class FieldtypeButton extends Fieldtype {
      */
     public function getBlankValue(Page $page, Field $field) {
         $button = new Button();
+        $button->page = $page;
+        $button->field = $field;
         if ($field->html) $button->html = $field->html;
         $button->setTrackChanges(true); 
         return $button; 
