@@ -8,11 +8,13 @@ With the button object the following properties are provided:
 
 **Defined in field settings**
 
+|Property|Description|
 |:-|:-|
 | `html` | Markup for the output. Placeholders can be used. Define placeholders by surrounding property names with curled brackets. If a property is an object use dot syntax to get subproperties. |
 
 **Defined in inputfield**
 
+|Property|Description|
 |:-|:-|
 | `label` | Page object if detected as internal page, default: NULL |
 | `target` | Relative paths will be translated to page (if exists). Placeholders (e.g. language home segments) can be used **@see** `html`  |
@@ -20,11 +22,13 @@ With the button object the following properties are provided:
 
 **Generic properties**
 
+|Property|Description|
 |:-|:-|
 | `targetPage` | Page object if detected as internal page, default: NULL |
 
 **Language specific properties**
 
+|Property|Description|
 |:-|:-|
 | `language` | Language object (current user language) |
 | `lang` | Language home segment |
