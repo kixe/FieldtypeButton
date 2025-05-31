@@ -30,7 +30,7 @@
 
 require_once(dirname(__FILE__) . '/FieldtypeButton.module'); 
 
-class FieldtypeButtonLanguage extends FieldtypeButton {
+class FieldtypeButtonLanguage extends FieldtypeButton /*implements FieldtypeLanguageInterface*/ {
 
 	public static function getModuleInfo() {
 		return array(

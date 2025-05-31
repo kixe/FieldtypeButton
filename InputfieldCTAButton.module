@@ -1,4 +1,4 @@
-<?php
+<?php namespace ProcessWire;
 
 /**
  * ProcessWire Button Inputfield
@@ -13,7 +13,8 @@
  * Licensed under GNU/GPL v2, see LICENSE.TXT
  * 
  * http://processwire.com
- * @version 1.1.0
+ * @version 1.1.2
+ * 
  * @since 1.0.1 added function isEmpty() to define this Inputfield as empty, if the label field is not populated (2016-07-27)
  * @since 1.0.2 disallow admin pages. Sanitized Selector string.
  *              Show Error if Sanitizer::url (target) returns an empty string. Modified Notice strings (2016-09-16)
@@ -30,6 +31,7 @@
  *                NOTE: if 'langNonDefault' and 'langForEn' is set the replacement is always appended by a slash
  *                (2019-11-19)
  * @since 1.1.1 - fixed bug empty value (2020-05-26)
+ * @since 1.1.2 - added ProcessWire namespace (2024-05-01)
  *
  */
 
@@ -39,7 +41,7 @@ class InputfieldCTAButton extends Inputfield {
         return array(
             'title' => __('Inputfield Button', __FILE__),
             'summary' => __('Create and Edit a CTA button.', __FILE__),
-            'version' => 111,
+            'version' => 112,
             'author' => 'kixe',
             'requires' => array("FieldtypeButton")
         );
@@ -160,10 +162,12 @@ class InputfieldCTAButton extends Inputfield {
         $f->label = $this->_("Label");
         $f->attr('name', "{$name}_label");
         $f->attr('value', $value->label);
+        
         if ($this->languageSupport) {
             $f->useLanguages = true;
             foreach($this->languageSupport->otherLanguagePageIDs as $languageID) $f->attr("value$languageID", $value->{"label$languageID"});
         }
+        
         $f->columnWidth = $field->hide_class? 50:33; 
         $inputfields->add($f);
 
@@ -235,7 +239,7 @@ class InputfieldCTAButton extends Inputfield {
 
         // loop inputs and set them if changed
         foreach($input_names as $key => $name) {
-            if(isset($input->$name) && $value->$key != $input->$name) {
+            if($value && isset($input->$name) && $value->$key != $input->$name) {
 
                 if ($key == 'target' && !empty($input->$name)) {
                     if (ctype_digit("{$input->$name}")) {
@@ -261,7 +265,8 @@ class InputfieldCTAButton extends Inputfield {
                         $this->error(sprintf($this->_("The target '%s' is not a valid url"), $input->$name));
                         return $this;
                     }
-                }           
+                }  
+                // var_dump($value);         
                 $value->set($key, $input->$name);
                 // $this->warning($value); // DEBUGGING: var dump Button object
                 $this->trackChange('value');

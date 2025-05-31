@@ -2,7 +2,7 @@
 
 /**
  * Helper WireData Class to hold a Button object
- * @version 1.1.2
+ * @version 1.1.3
  *
  * @since 1.0.2 fixed bug in render() if single language mode (2016-12-06)
  * @since 1.0.3 synchronized version numbering (2016-12-06)
@@ -19,6 +19,7 @@
  *                (2019-11-19)
  * @since 1.1.1 - added property 'httpTarget', and property aliasse 'url' (target) and 'httpUrl' (httpTarget) (2020-06-03)
  * @since 1.1.2 - added ProcessWire namespace, made render() hookable to optionally run textformatters (2022-03-03)
+ * @since 1.1.3 - Fixed bug: Creation of dynamic property ProcessWire\Button::$label is deprecated (2024-10-08)
  */
 
 class Button extends WireData {
@@ -121,10 +122,14 @@ class Button extends WireData {
             if ($this->languages->getDefault()->id != $userLanguageID) {
                 $_label = $this->{"label$userLanguageID"};
                 // fallback to default language  if label is empty
-                $this->label = $_label? $_label:$this->label;
+                if ($_label) $this->set('label', $_label);
             }
         }
-        return wirePopulateStringTags($this->html, $this);
+        $return = wirePopulateStringTags($this->html, $this);
+        if (strpos($this->target, 'mailto:') !== false && wire('modules')->isInstalled('TextformatterEmailObfuscator')) {
+            wire('modules')->get('TextformatterEmailObfuscator')->format($return);
+        }
+        return $return;
     }
 
     /**
